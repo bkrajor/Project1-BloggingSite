@@ -4,7 +4,7 @@ const router = express.Router();
 const blogController = require("../controllers/blogController")
 const authorController = require("../controllers/authorController")
 const middleWare =require("../middleWare/middleWare")
-
+ 
 router.post('/Authors',authorController.createAuthor) 
 
 router.post("/Blogs" ,middleWare.authenticate,blogController.createBlog)         

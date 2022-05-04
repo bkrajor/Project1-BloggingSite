@@ -19,7 +19,7 @@ let authenticate = async function (req, res, next) {
         return res.status(500).send({ status: false, error: error.message })
     }
 }
-
+ 
 let authorize = async function (req, res, next) {
     try {
         let decodedAuthorId = req.decodedAuthorId

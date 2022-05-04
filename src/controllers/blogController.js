@@ -6,7 +6,7 @@ let keyValid = function (value) {
     if (typeof (value) == "undefined" || typeof (value) == null) { return true }
     if (typeof (value) === "string" && value.trim().length == 0) { return true }
     return false
-}
+} 
 
 let validRequestBody = function (reqBody) {
     return Object.keys(reqBody).length > 0
