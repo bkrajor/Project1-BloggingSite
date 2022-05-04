@@ -20,4 +20,3 @@ const authormodel = new mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = mongoose.model('author', authormodel);
-//hello
