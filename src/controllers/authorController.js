@@ -15,7 +15,7 @@ let validRequestBody = function(value){
 
 let createAuthor = async (req, res) => {
     try {
-        data = req.body
+        let data = req.body
         const { fname, lname, title, email, password } = data
         if(!validRequestBody(data)) return res.status(400).send({status:false,Message:"Invalid Request Parameter ,Please provide Author Details"})
 
@@ -66,3 +66,4 @@ let loginAuthor = async (req, res) => {
 
 module.exports.createAuthor = createAuthor
 module.exports.loginAuthor = loginAuthor
+

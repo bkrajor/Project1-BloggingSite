@@ -26,7 +26,7 @@ const createBlog = async (req, res) => {
         let { authorId, title, body, tags, category, subcategory, isPublished } = data
 
         if (tags) {   //array   , string ,object string
-            if (Array.isArray(tags)) tags = tags.map(el => el.trim()).filter(el => el)
+            if (Array.isArray(tags)) tags = tags.map(el => el.trim()).filter(el => el)   
             if (Object.prototype.toString.call(tags) === "[object String]") tags = tags.trim()
         }
         if (subcategory) {
@@ -139,7 +139,6 @@ let updateBlog = async (req, res) => {
         res.status(500).send({ Error: err.message })
     }
 }
-
 
 //######################################################################################################################
 let deleteBlog = async (req, res) => {
