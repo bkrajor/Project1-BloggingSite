@@ -66,7 +66,7 @@ const createBlog = async (req, res) => {
 const getblog = async (req, res) => {
     try {
         const data = req.query
-        const blogs = { isDeleted: false, deletedAt: null, isPublished: true }
+        const blogs = { isDeleted: false, isPublished: true }
         if (validRequestBody(data)) {
             const { authorId, category, tags, subcategory } = data
             if (authorId)
@@ -165,7 +165,7 @@ let deleteBlog = async (req, res) => {
 //######################################################################################################################
 const deleteBlogs = async function (req, res) {
     try {
-        const filterQuery = { isDeleted: false   }//, deletedAt: null }
+        const filterQuery = { isDeleted: false }
         const queryParams = req.query
         const authorIdFromToken = req.decodedAuthorId
 
