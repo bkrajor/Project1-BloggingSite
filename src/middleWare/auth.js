@@ -1,5 +1,10 @@
 let jwt = require("jsonwebtoken")
 const blogModel = require("../models/blogModel")
+const mongoose=require("mongoose")
+
+let isValidObjectId = function (authorId) {
+    return mongoose.isValidObjectId(authorId)     //mongoose.Types.ObjectId.isValid(authorId)    
+}
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -26,7 +31,7 @@ let authenticate = async function (req, res, next) {
 let authorize = async function (req, res, next) {
     try {
         const blogId = req.params.blogId
-        if (!validObjectId(blogId)) return res.status(400).send({ status: false, Message: "BlogId is not valid" })
+        if (!isValidObjectId(blogId)) return res.status(400).send({ status: false, Message: "BlogId is not valid" })
 
         const blog = await blogModel.findOne({ _id: blogId, isDeleted: false })
         if (!blog) return res.status(404).send({ status: false, message: "No blog exists with this id or the blog is deleted" })

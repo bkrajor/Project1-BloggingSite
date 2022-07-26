@@ -1,6 +1,6 @@
-const { default: mongoose } = require("mongoose")
 const authorModel = require("../models/authorModel")
 const blogModel = require("../models/blogModel")
+const mongoose = require("mongoose")
 
 //######################################################################################################################
 let isValid = function (value) {
@@ -9,47 +9,59 @@ let isValid = function (value) {
     return true
 }
 
-let validRequestBody = function (reqBody) {
+let isValidRequestBody = function (reqBody) {
     return Object.keys(reqBody).length > 0
 }
 
-let validObjectId = function (authorId) {
-    return mongoose.isValidObjectId(authorId)     //mongoose.Types.ObjectId.isValid(authorId)    
+let isValidObjectId = function (authorId) {
+    return mongoose.isValidObjectId(authorId)
 }
 
 //######################################################################################################################
 const createBlog = async (req, res) => {
     try {
         const data = req.body
-        if (!validRequestBody(data)) return res.status(400).send({ status: false, Message: "Please provide something to create blog" })
+        if (!isValidRequestBody(data)) return res.status(400).send({ status: false, Message: "Please provide something to create blog" })
 
         let { authorId, title, body, category, tags, subcategory, isPublished } = data
 
-        if (!authorId) return res.status(400).send({ Message: "authorId is required...!" })
-        if (!title) return res.status(400).send({ Message: "Title is required...!" })
-        if (!body) return res.status(400).send({ Message: "Body is required...!" })
-        if (!category) return res.status(400).send({ Message: "Category is required...!" })
+        if (!isValid(authorId)) return res.status(400).send({ Message: "authorId is required...!" })
+        if (!isValid(title)) return res.status(400).send({ Message: "Title is required...!" })
+        if (!isValid(body)) return res.status(400).send({ Message: "Body is required...!" })
+        if (!isValid(category)) return res.status(400).send({ Message: "Category is required...!" })
 
-        if (!validObjectId(authorId)) return res.status(400).send({ status: false, Message: `${authorId} -> Author Id should be valid` })
+        if (!isValidObjectId(authorId)) return res.status(400).send({ status: false, Message: `${authorId} -> Author Id should be valid` })
         if (!isValid(title)) return res.status(400).send({ status: false, Message: "title should be valid" })
         if (!isValid(body)) return res.status(400).send({ status: false, Message: "body should be valid" })
         if (!isValid(category)) return res.status(400).send({ status: false, Message: "category should be valid" })
 
         if (tags) {
-            if (Array.isArray(tags))
+            if (Array.isArray(tags)) {
+                for (let i = 0; i < tags.length; i++) {
+                    if (!isValid(tags[i])) return res.send({ status: false, Message: "Tags is invalid" })
+                }
                 data['tags'] = [...tags]
-            if (Object.prototype.toString.call(tags) === "[object String]")
-                data['tags'] = [tags]
+            } else {
+                if (!isValid(tags)) return res.send({ status: false, Message: "Tags is invalid" })
+                data['tags']=tags.trim()
+            }
         }
         if (subcategory) {
-            if (Array.isArray(subcategory))
+            if (Array.isArray(subcategory)) {
+                for (let i = 0; i < subcategory.length; i++) {
+                    if (!isValid(subcategory[i])) return res.send({ status: false, Message: "Subacategory is invalid" })
+                }
                 data['subcategory'] = [...subcategory]
-            if (Object.prototype.toString.call(subcategory) === "[object String]")
-                data['subcategory'] = [...subcategory]
+            } else {
+                if (!isValid(subcategory)) return res.send({ status: false, Message: "Subcategory is invalid" })
+                data['subcategory'] = subcategory.trim()
+            }
         }
 
-        const validAuthorId = await authorModel.findById(authorId)
-        if (!validAuthorId) return res.status(400).send({ status: false, Message: "Author Does not exist" })
+        const isAuthorExist = await authorModel.findById(authorId)
+        if (!isAuthorExist) return res.status(400).send({ status: false, Message: "Author Does not exist" })
+
+        if(req.authorId !== authorId) return res.send({status:false, Message:"AuthorId should be same as your AuthorId"})
 
         let createdBlog = await blogModel.create(data)
 
@@ -67,41 +79,27 @@ const getblog = async (req, res) => {
     try {
         const data = req.query
         const blogs = { isDeleted: false, isPublished: true }
-        if (validRequestBody(data)) {
+        if (isValidRequestBody(data)) {
             const { authorId, category, tags, subcategory } = data
             if (authorId) {
-                if (!validObjectId(authorId)) return res.send({ status: false, Message: "AuthorId is invalid" })
-                let isAuthorExist = await authorModel.findById(authorId)
-                if (!isAuthorExist) return res.send({ status: false, Message: "Author does not exist" })
-                blogs.authorId = authorId
+                if (isValid(authorId) && isValidObjectId(authorId))
+                    blogs.authorId = authorId.trim()
             }
             if (category) {
-                if (!isValid(category)) return res.send({ status: false, Message: "Category is invalid" })
-                blogs.category = category.trim()
+                if (isValid(category))
+                    blogs['category'] = category.trim()
             }
             if (tags) {
-                if (Array.isArray(tags)) {
-                    for (let i = 0; i < tags.length; i++) {
-                        if (!isValid(tags[i]))
-                            return res.send({ status: false, Message: "Tags is invalid" })
-                        blogs['tags'] = tags[i].trim()
-                    }
+                if (isValid(tags)) {
+                    const tagsArray = tags.trim().split(",").map(tags => tags.trim())
+                    blogs.tags = { $all: tagsArray }
                 }
-            } else {
-                if (!isValid(tags)) return res.send({ status: false, Message: "Tags is invalid" })
-                blogs['tags'] = tags.trim()
             }
             if (subcategory) {
-                if (Array.isArray(subcategory)) {
-                    for (let i = 0; i < subcategory.length; i++) {
-                        if (!isValid(subcategory[i]))
-                            return res.send({ status: false, Message: "Subacategory is invalid" })
-                        blogs['subcategory'] = subcategory[i].trim()
-                    }
+                if (isValid(subcategory)) {
+                    const subcategoryArray = subcategory.trim().split(",").map(subcategory => subcategory.trim())
+                    blogs.subcategory = { $all: subcategoryArray }
                 }
-            } else {
-                if (!isValid(subcategory)) return res.send({ status: false, Message: "Subcategory is invalid" })
-                blogs['subcategory'] = subcategory.trim()
             }
         }
 
@@ -130,57 +128,57 @@ let updateBlog = async (req, res) => {
             $addToSet: {}
         }
 
-        if (!validRequestBody(data)) return res.status(400).send({ status: false, Message: "Please provide something to delete the blog" })
+        if (!isValidRequestBody(data)) return res.status(400).send({ status: false, Message: "Please provide something to delete the blog" })
 
-        if (data.hasOwnProperty(title)) {
+        if (title) {
             if (!isValid(title)) return res.status(400).send({ status: false, Message: "title should be valid" })
-            dataToBeUpdated.$set['title'] = title.trim()
+            dataToBeUpdated.$set['title'] = title
         }
-        if (data.hasOwnProperty(body)) {
+        if (body) {
             if (!isValid(body)) return res.status(400).send({ status: false, Message: "body should be valid" })
-            dataToBeUpdated.$set['body'] = body.trim()
+            dataToBeUpdated.$set['body'] = body
         }
 
-        if (data.hasOwnProperty(category)) {
-            if (isValid(category)) return res.status(400).send({ status: false, Message: "category should be valid" })
-            dataToBeUpdated.$set['category'] = category.trim()
+        if (category) {
+            if (!isValid(category)) return res.status(400).send({ status: false, Message: "category should be valid" })
+            dataToBeUpdated.$set['category'] = category
         }
 
-        if (data.hasOwnProperty(tags)) {
+        if (tags) {
             if (Array.isArray(tags)) {
                 for (let i = 0; i < tags.length; i++) {
                     if (!isValid(tags[i])) return res.send({ status: false, Message: "Tags is invalid" })
                 }
                 dataToBeUpdated.$addToSet['tags'] = { $each: tags }
+            } else {
+                if (!isValid(tags)) return res.send({ status: false, Message: "Tags is invalid" })
+                dataToBeUpdated.$addToSet['tags'] = tags.trim()
             }
-        } else {
-            if (!isValid(tags)) return res.send({ status: false, Message: "Tags is invalid" })
-            dataToBeUpdated.$addToSet['tags'] = tags.trim()
         }
-        if (data.hasOwnProperty(subcategory)) {
+        if (subcategory) {
             if (Array.isArray(subcategory)) {
                 for (let i = 0; i < subcategory.length; i++) {
                     if (!isValid(subcategory[i])) return res.send({ status: false, Message: "Subacategory is invalid" })
                 }
                 dataToBeUpdated.$addToSet['subcategory'] = { $each: subcategory }
+            } else {
+                if (!isValid(subcategory)) return res.send({ status: false, Message: "Subcategory is invalid" })
+                dataToBeUpdated.$addToSet['subcategory'] = subcategory.trim()
             }
-        } else {
-            if (!isValid(subcategory)) return res.send({ status: false, Message: "Subcategory is invalid" })
-            dataToBeUpdated.$addToSet['subcategory'] = subcategory.trim()
-
-            let updatedBlog = await blogModel.findByIdAndUpdate({ _id: blogId }, dataToBeUpdated, { new: true })
-
-            isPublished ? updatedBlog.publishedAt = new Date() : updatedBlog.publishedAt = null
-            updatedBlog.save()
-            res.status(200).send({ status: true, message: "Blog update is successful", data: updatedBlog })
         }
-    } catch (err) {
+        let updatedBlog = await blogModel.findByIdAndUpdate({ _id: blogId }, dataToBeUpdated, { new: true })
+
+        isPublished ? updatedBlog.publishedAt = new Date() : updatedBlog.publishedAt = null
+        updatedBlog.save()
+        res.status(200).send({ status: true, message: "Blog update is successful", data: updatedBlog })
+    }
+    catch (err) {
         res.status(500).send({ Error: err.message })
     }
 }
 
 //######################################################################################################################
-let deleteBlog = async (req, res) => {
+let deleteBlogById = async (req, res) => {
     try {
         const blogId = req.params.blogId
 
@@ -192,60 +190,52 @@ let deleteBlog = async (req, res) => {
     }
 }
 //######################################################################################################################
-// const deleteBlogs = async function (req, res) {
-//     try {
-//         let data = req.query
-//         let blogId = req.params.blogId
 
-//         let { authorId, category, tags, subcategory, isPublished } = data
+const deleteBlogByQuery = async function (req, res) {
+    try {
+        const filterQuery = { isDeleted: false }
+        const queryParams = req.query
 
-//         let dataToBedeleted = {}
+        if (!isValidRequestBody(queryParams)) return res.status(400).send({ status: false, Message: 'No query param received,aborting delete operation' })
 
-//         if (!validRequestBody(data)) return res.status(400).send({ status: false, Message: "Please provide something to delete the blogs" })
-//         if (!validObjectId(blogId)) return res.status(400).send({ status: false, Message: "BlogId is not valid" })
+        let { authorId, category, tags, subcategory, isPublished } = queryParams
 
-//         if (data.hasOwnProperty(authorId)) {
-//             if (!validObjectId(authorId)) return res.status(400).send({ status: false, Message: "AuthorId should be valid" })
-//             dataToBedeleted['authorId'] = authorId.trim()
-//         }
-       
-//         if (data.hasOwnProperty(category)) {
-//             if (isValid(category)) return res.status(400).send({ status: false, Message: "category should be valid" })
-//             dataToBedeleted['category'] = category.trim()
-//         }
+        if (authorId)
+            if (!isValid(authorId) && isValidObjectId(authorId)) filterQuery['authorId'] = authorId
 
-//         if (data.hasOwnProperty(tags)) {
-//             if (Array.isArray(tags)) {
-//                 for (let i = 0; i < tags.length; i++) {
-//                     if (!isValid(tags[i])) return res.send({ status: false, Message: "Tags is invalid" })
-//                 }
-//                 dataToBedeleted['tags'] = { $each: tags }
-//             }
-//         } else {
-//             if (!isValid(tags)) return res.send({ status: false, Message: "Tags is invalid" })
-//             dataToBedeleted['tags'] = tags.trim()
-//         }
-//         if (data.hasOwnProperty(subcategory)) {
-//             if (Array.isArray(subcategory)) {
-//                 for (let i = 0; i < subcategory.length; i++) {
-//                     if (!isValid(subcategory[i])) return res.send({ status: false, Message: "Subacategory is invalid" })
-//                 }
-//                 dataToBedeleted['subcategory'] = { $each: subcategory }
-//             }
-//         } else {
-//             if (!isValid(subcategory)) return res.send({ status: false, Message: "Subcategory is invalid" })
-//             dataToBedeleted['subcategory'] = subcategory.trim()
+        if (category)
+            if (!isValid(category)) filterQuery['category'] = category
 
-//             let deletedBlog = await blogModel.findByIdAndUpdate({ _id: blogId }, dataToBedeleted, { new: true })
+        if (isPublished)
+            if (!isValid(isPublished)) filterQuery['isPublished'] = isPublished
 
-//             isPublished ? deletedBlog.publishedAt = new Date() : deletedBlog.publishedAt = null
-//             deletedBlog.save()
-//             res.status(200).send({ status: true, message: "Blog update is successful", data: deletedBlog })
-//         }
-//     } catch (err) {
-//         res.status(500).send({ Error: err.message })
-//     }
-// }
+        if (tags)
+            if (!isValid(tags)) {
+                const tagsArr = tags.trim().split('.').map(tag => tag.trim())
+                filterQuery['tags'] = { $all: tagsArr }
+            }
+        if (subcategory)
+            if (!isValid(subcategory)) {
+                const subcategoryArray = subcategory.trim().split('.').map(subcat => subcat.trim())
+                filterQuery['subcategory'] = { $all: subcategoryArray }
+            }
+
+        const blogs = await blogModel.find(filterQuery)
+
+        if (blogs.length === 0) return res.status(404).send({ staus: false, Message: "No matching blogs found" })
+
+        const idOfBlogsToDelete = blogs.map(blogs => { if (blogs.authorId.toString() === req.authorId) return blogs._id })
+    
+        if (idOfBlogsToDelete.length === 0) return res.status(404).send({ status: false, Message: "No blogs found" })
+        console.log(idOfBlogsToDelete)
+
+        await blogModel.updateMany({ _id: { $in: idOfBlogsToDelete } }, { $set: { isDeleted: true, deletedAt: Date.now() } })
+        return res.status(200).send({ status: true, Message: "Blog(s) deleted successfully" })
+    }
+    catch (err) {
+        res.status(500).send({ status: false, Message: "Error", error: err.message })
+    }
+}
 
 //######################################################################################################################
-module.exports = { createBlog, getblog, updateBlog, deleteBlog }
+module.exports = { createBlog, getblog, updateBlog, deleteBlogById, deleteBlogByQuery }
