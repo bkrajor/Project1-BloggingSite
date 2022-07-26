@@ -3,10 +3,10 @@ const blogModel = require("../models/blogModel")
 const mongoose=require("mongoose")
 
 let isValidObjectId = function (authorId) {
-    return mongoose.isValidObjectId(authorId)     //mongoose.Types.ObjectId.isValid(authorId)    
+    return mongoose.isValidObjectId(authorId)
 }
 
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 let authenticate = async function (req, res, next) {
     try {
@@ -22,11 +22,11 @@ let authenticate = async function (req, res, next) {
         next()
     }
     catch (err) {
-        return res.status(500).send({ status: false, err: err.message })
+        return res.status(500).send({ status: false, error: err.message })
     }
 }
 
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 let authorize = async function (req, res, next) {
     try {
@@ -40,7 +40,7 @@ let authorize = async function (req, res, next) {
         next()
     }
     catch (err) {
-        return res.status(500).send({ status: false, err: err.message })
+        return res.status(500).send({ status: false, error: err.message })
     }
 }
 

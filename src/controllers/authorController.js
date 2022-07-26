@@ -1,6 +1,8 @@
 const authorModel = require('../models/authorModel')
 const jwt = require("jsonwebtoken")
 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 let isValid = (value) => {
     if (typeof (value) == "undefined" || typeof (value) == null) return false
     if (typeof (value) === "string" && value.trim().length == 0) return false
@@ -15,17 +17,19 @@ let validRequestBody = (value) => {
     return Object.keys(value).length > 0
 }
 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 let createAuthor = async (req, res) => {
     try {
         let data = req.body
         const { fname, lname, title, email, password } = data
         if (!validRequestBody(data)) return res.status(400).send({ status: false, Message: "Invalid Request Parameter ,Please provide Author Details" })
 
-        if (!isValid(fname)) return res.status(400).send({ status: false, Message: "fname is required...." });
-        if (!isValid(lname)) return res.status(400).send({ status: false, Message: "lname is required...." });
-        if (!isValid(title)) return res.status(400).send({ status: false, Message: "title is required...." });
-        if (!isValid(email)) return res.status(400).send({ status: false, Message: "email is required...." });
-        if (!isValid(password)) return res.status(400).send({ status: false, Message: "password is required....." });
+        if (!isValid(fname)) return res.status(400).send({ status: false, Message: "fname is required...." })
+        if (!isValid(lname)) return res.status(400).send({ status: false, Message: "lname is required...." })
+        if (!isValid(title)) return res.status(400).send({ status: false, Message: "title is required...." })
+        if (!isValid(email)) return res.status(400).send({ status: false, Message: "email is required...." })
+        if (!isValid(password)) return res.status(400).send({ status: false, Message: "password is required....." })
 
         if (!/^[a-zA-Z ]+$/.test(fname)) return res.status(400).send({ status: false, Message: "fname should be valid" })
         if (!/^[a-zA-Z ]+$/.test(lname)) return res.status(400).send({ status: false, Message: "lname should be valid" })
@@ -44,13 +48,15 @@ let createAuthor = async (req, res) => {
     }
 }
 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 let loginAuthor = async (req, res) => {
     let data = req.body
     let { email, password } = data
     if (!validRequestBody(data)) return res.status(400).send({ status: false, Message: "Invalid Request Parameter ,Please provide Login Details" })
 
-    if (!isValid(email)) return res.status(400).send({ status: false, Message: "email is required...." });
-    if (!isValid(password)) return res.status(400).send({ status: false, Message: "password is required....." });
+    if (!isValid(email)) return res.status(400).send({ status: false, Message: "email is required...." })
+    if (!isValid(password)) return res.status(400).send({ status: false, Message: "password is required....." })
 
     if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) return res.status(400).send({ status: false, Message: "Email Address should be valid" })
     if (!isValid(password)) return res.status(400).send({ status: false, Message: "password should be valid" })
@@ -63,6 +69,6 @@ let loginAuthor = async (req, res) => {
     return res.status(201).send({ status: true, Message: "Author Login Successfully", data: { token } })
 }
 
-module.exports.createAuthor = createAuthor
-module.exports.loginAuthor = loginAuthor
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+module.exports = { createAuthor, loginAuthor }
