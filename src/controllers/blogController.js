@@ -31,10 +31,7 @@ const createBlog = async (req, res) => {
         if (!isValid(category)) return res.status(400).send({ Message: "Category is required...!" })
 
         if (!isValidObjectId(authorId)) return res.status(400).send({ status: false, Message: `${authorId} -> Author Id should be valid` })
-        if (!isValid(title)) return res.status(400).send({ status: false, Message: "title should be valid" })
-        if (!isValid(body)) return res.status(400).send({ status: false, Message: "body should be valid" })
-        if (!isValid(category)) return res.status(400).send({ status: false, Message: "category should be valid" })
-
+       
         if (tags) {
             if (Array.isArray(tags)) {
                 for (let i = 0; i < tags.length; i++) {
